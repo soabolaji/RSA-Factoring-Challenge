@@ -1,72 +1,49 @@
 #!/usr/bin/python3
 import sys
 
-# Check if a file is passed as an argument
-if len(sys.argv) != 2:
-    print("Usage: factors fnumber")
-    sys.exit(1)
+check_factor()
+{
+	if [ $# -ne 3 ];
+        then
+                args=("$@")
+                count=0
+                num2=1
+                for a in ${args[*]};
+                do
+                        if [ $count -gt 1 ];
+                        then
+                                num2=$(echo $a*$num2 | bc)
+                        fi
+                        count=$((count + 1))
+                done
+        else
+                num2=$3
+        fi
 
-# Open the file
-try:
-    f = open(sys.argv[1], 'r')
-except IOError:
-    print("File not found")
-    sys.exit(1)
+        num1=$2
+        num=$(echo "$1" | tr ':' '=')
 
-# Read the file line by line
-for line in f:
-    # Convert line to an integer
-    n = int(line)
+        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
+	        if ((result == 1)); then
+		        numcp=$num1
+		        num1=$num2
+		        num2=$numcp
+                fi
 
-    # Initialize variables for factorization
-    p = 2
-    q = 1
+        echo "$num$num1*$num2"
+}
 
-    # Find the factors of n
-    while p <= n:
-        if n % p == 0:
-            q = n // p
-            break
-        p += 1
+if [ $# -ne 1 ]
+then
+        echo 'Usage: factors <file>'
+        exit 1
+else
 
-    # Print the factorization
-    print(str(n) + '=' + str(p) + '*' + str(q))
+        while read i
+        do
 
-f.close()
-sys.exit(0)
+                result=$(factor "$i")
+                check_factor $result
 
-
-
-"""Module that factorize as many numbers as possible
- into a product of two smaller numbers."""
-from sys import argv
-
-
-def factorize(value):
-    """"print a simple descomposition of an integer > 1"""
-    i = 2
-
-    if value < 2:
-        return
-    print()
-    print(value, "<- value-bef")
-    while value % i:
-        i += 1
-    print("{:.0f}={:.0f}*{:.0f}".format(value, value / i, i))
-    print(value, "<- value-aft")
-    print()
-
-if len(argv) != 2:
-    exit()
-
-try:
-    with open(argv[1]) as file:
-        line = file.readline()
-
-        while line != "":
-            value = int(line.split('\n')[0])
-            factorize(value)
-            line = file.readline()
-except:
-    pass
-
+        done < "$1"
+fi
