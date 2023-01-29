@@ -1,35 +1,28 @@
 #!/usr/bin/python3
 import sys
-import ctypes
-from resource import getrusage as resource_usage, RUSAGE_SELF
-from time import time as timestamp
 
+def factorize(n):
+    factors = []
+    for i in range(2, int(n**0.5)+1):
+        if n % i == 0:
+            factors.append((i, n//i))
+            break
+        else:
+            factors.append((n, 1))
+            return factors
 
-def unix_time(function):
-    '''Return `real`, `sys` and `user` elapsed time, like UNIX's command `time`
-    You can calculate the amount of used CPU-time used by your
-    function/callable by summing `user` and `sys`. `real` is just like the wall
-    clock.
-    Note that `sys` and `user`'s resolutions are limited by the resolution of
-    the operating system's software clock (check `man 7 time` for more
-    details).
-    '''
-    start_time, start_resources = timestamp(), resource_usage(RUSAGE_SELF)
-    function()
-    end_resources, end_time = resource_usage(RUSAGE_SELF), timestamp()
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: factors fnumber")
+        sys.exit(1)
 
-    return "\nreal: {}\nuser: {}\nsys: {}".format(
-        end_time - start_time,
-        end_resources.ru_utime - start_resources.ru_utime,
-        end_resources.ru_stime - start_resources.ru_stime)
+    fnumber = sys.argv[1]
+    with open(fnumber) as f:
+        for line in f:
+            n = int(line.strip())
+            factors = factorize(n)
+            print("{} = {} * {}".format(n, factors[0][0], factors[0][1]))
 
+if __name__ == "__main__":
+    main()
 
-def print_factors():
-    fun = ctypes.CDLL("./lib_factors_functions.so")
-    fun.trial_division.argtypes = [ctypes.c_long]
-    with open(sys.argv[1], 'r') as prime:
-        line = prime.readline()
-        while line != '':
-            n = int(line)
-            fun.trial_division(n)
-            line = prime.readline()
