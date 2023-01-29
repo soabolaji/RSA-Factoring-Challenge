@@ -4,9 +4,10 @@
 from sys import argv
 
 
-def factorize(value):
+def factorize(fnumber):
     """"print a simple descomposition of an integer > 1"""
     i = 2
+    value = fnumber
 
     if value < 2:
         return
